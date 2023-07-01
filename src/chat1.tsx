@@ -124,7 +124,7 @@ const Chat2 = () => {
       formData.append("image", selectedImage);
 
       const response = await axios.post(
-        "http://localhost:8080/api/v1/upload_chat_image/",
+        "http://localhost:8080/api/v1/upload_chat_image/studentId",
         formData,
         {
           params: {
