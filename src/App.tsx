@@ -4,7 +4,7 @@ import io from "socket.io-client";
 
 // Create service
 const data = {
-  studentId: "1de3c231-7738-492d-9211-c1be05d09d8e",
+  studentId: "736bfb79-0098-4f37-a4a9-fcccab610d52",
   servicePortal: {
     serviceName: "New service",
     serviceStatus: "TODO",
@@ -34,15 +34,20 @@ export default function App() {
     if (isRendered) {
       socket.current = io("http://localhost:8080", {
         query: {
-          absAdminId: "507033b8-46f7-4b88-af1f-40c34e49e454",
-          adminUserId: "6b761993-1827-4365-9f3b-15dd1eacdba5",
+          absAdminId: "6e009c0c-c859-4794-81d0-51be0a7cdfd0",
+          adminUserId: "10d0e172-5ec2-4eaa-8b09-7c3387b33134",
+          studentId: "736bfb79-0098-4f37-a4a9-fcccab610d52",
+          connectionType: "parent",
         },
+      });
+      socket.current.on("updatedService", (data: any) => {
+        console.log(data);
       });
       socket.current.on("connect", () => {
         console.log("Connected to the server");
         socket.current.emit(
           "userLogin",
-          "6b761993-1827-4365-9f3b-15dd1eacdba5"
+          "736bfb79-0098-4f37-a4a9-fcccab610d52"
         );
       });
       socket.current.on("newService", (data: unknown) => {
@@ -50,7 +55,7 @@ export default function App() {
       });
       socket.current.emit("fetchServices", {
         userFetchType: "student",
-        userFetchId: "1de3c231-7738-492d-9211-c1be05d09d8e",
+        userFetchId: "736bfb79-0098-4f37-a4a9-fcccab610d52",
       });
 
       socket.current.on("serviceHistory", (data: any) => {
@@ -93,9 +98,9 @@ export default function App() {
   }, [parameter1, parameter2, isRendered]);
 
   const fwConfig = {
-    public_key: "",
+    public_key: "FLWPUBK_TEST-36a812686cf2f832980130e983ba1662-X",
     tx_ref: `student-${Math.random() * 10}`,
-    amount: 1000,
+    amount: 20000,
     currency: "NGN",
     country: "NG",
     payment_options: "card",
