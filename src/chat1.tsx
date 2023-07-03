@@ -8,6 +8,12 @@ function formatTimestamp(timestamp: any) {
   return date.toLocaleString("en-US", options);
 }
 
+const senderId = "983037b8-ce88-49dd-9a67-95be0043d829";
+const receiverId = "736bfb79-0098-4f37-a4a9-fcccab610d52";
+
+const absAdminId = "6e009c0c-c859-4794-81d0-51be0a7cdfd0";
+const adminUserId = "10d0e172-5ec2-4eaa-8b09-7c3387b33134";
+
 const Chat2 = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [image, setImage] = useState("");
@@ -17,21 +23,21 @@ const Chat2 = () => {
   const [input, setInput] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [selectedImage, setSelectImage] = useState<any>("");
-  const [offline, setOffline] = useState(false);
+  const [offline, setOffline] = useState(true);
   const [user1, setUser] = useState<any>(null);
   const [isRead, setIsRead] = useState(false);
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const token =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9sYXR1bmppQGdtYWlsLmNvbSIsImF1dGhJZCI6ImM1YWVkZWZjLTVkZGYtNGY4NS04YTIwLTk1ODFkMDlhODQ3YSIsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNjg4MjIxMjA4LCJleHAiOjE2OTA4MTMyMDh9.eq7HQ4Y4KUP8gKxYNathGqSTjKKBA9bmm8xP_SVlgls";
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9sYXR1bmppYXlvbWlrdUBnbWFpbC5jb20iLCJhdXRoSWQiOiI3MzZiZmI3OS0wMDk4LTRmMzctYTRhOS1mY2NjYWI2MTBkNTIiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODMwNDM3NSwiZXhwIjoxNjkwODk2Mzc1fQ.-vyLXdV6hsXZHZwMrKZ03BPWeW858xpA0ImDSgLGsRU";
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         };
         const response = await axios.get(
-          `http://localhost:8080/api/v1/student/${"c5aedefc-5ddf-4f85-8a20-9581d09a847a"}`,
+          `http://localhost:8080/api/v1/student/${receiverId}`,
           config
         );
         setUser(response.data.data);
@@ -42,67 +48,6 @@ const Chat2 = () => {
     fetchUser();
   }, [offline]);
 
-  useEffect(() => {
-    socket.current = io("http://localhost:8080", {
-      query: {
-        absAdminId: "937b5d78-8248-44f2-bb82-af4fa18a1efd",
-        adminUserId: "053d5b9b-9ed8-4186-b3ba-c2957959e759",
-        studentId: "87b473da-e45c-475d-bd87-d9bd3e001ac4",
-      },
-    });
-    socket.current.on("connect", () => {
-      console.log("Connected to the server");
-      setOffline(false);
-      socket.current.emit("userLogin", "87b473da-e45c-475d-bd87-d9bd3e001ac4");
-      socket.current.on("messageDelivered", (data: any) => {
-        setMessages((prev: any) => [...prev, data]);
-           console.log(data);
-      });
-      socket.current.emit("fetchUserMessages", {
-        senderId: "87b473da-e45c-475d-bd87-d9bd3e001ac4",
-        receiverId: "c5aedefc-5ddf-4f85-8a20-9581d09a847a",
-      });
-      socket.current.on("chatFetched", (data: any) => {
-        setMessages(data);
-      });
-    });
-    socket.current.on("disconnect", () => {
-      console.log("Socket disconnected");
-    });
-    socket.current.on("userOffline", (studentId: string) => {
-      if (studentId === "c5aedefc-5ddf-4f85-8a20-9581d09a847a") {
-        console.log(`Student ${studentId} went offline.`);
-        setOffline(true);
-      }
-    });
-    socket.current.on("userOnline", (studentId: string) => {
-      if (studentId === "c5aedefc-5ddf-4f85-8a20-9581d09a847a") {
-        setOffline(false);
-        console.log(`Student ${studentId} came online.`);
-      }
-    });
-    socket.current.emit("set", "is_it_ok", function (response: any) {
-      if (response === "ok") {
-        setIsRead(true);
-      } else {
-        setIsRead(false);
-      }
-    });
-    socket.current.emit("markMessagesAsRead", {
-      senderId: "87b473da-e45c-475d-bd87-d9bd3e001ac4",
-      receiverId: "c5aedefc-5ddf-4f85-8a20-9581d09a847a",
-    });
-    return () => {
-      socket.current.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
 
   const createChat = (e: any) => {
     e.preventDefault();
@@ -110,8 +55,8 @@ const Chat2 = () => {
       return;
     }
     socket.current.emit("sendMessage", {
-      from: "87b473da-e45c-475d-bd87-d9bd3e001ac4",
-      to: "c5aedefc-5ddf-4f85-8a20-9581d09a847a",
+      from: senderId,
+      to: receiverId,
       message: input,
       type: "text",
     });
@@ -128,9 +73,13 @@ const Chat2 = () => {
         formData,
         {
           params: {
-            from: "87b473da-e45c-475d-bd87-d9bd3e001ac4",
-            to: "c5aedefc-5ddf-4f85-8a20-9581d09a847a",
+            from: senderId,
+            to: receiverId,
             type: "media",
+          },
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF5b21pa3VAZ21haWwuY29tIiwiYXV0aElkIjoiOTgzMDM3YjgtY2U4OC00OWRkLTlhNjctOTViZTAwNDNkODI5Iiwicm9sZSI6InN0dWRlbnQiLCJpYXQiOjE2ODgzMDMxMTIsImV4cCI6MTY5MDg5NTExMn0.AR3i0Jy4cy9CptmdWiuW9FHC5SzM9a8rnsM2VKRGX28",
           },
         }
       );
@@ -173,17 +122,78 @@ const Chat2 = () => {
     setSelectImage("");
   };
 
+    useEffect(() => {
+      socket.current = io("http://localhost:8080", {
+        query: {
+          absAdminId,
+          adminUserId,
+          studentId: senderId,
+          connectType: "student",
+        },
+      });
+      socket.current.on("connect", () => {
+        console.log("Connected to the server");
+        socket.current.emit("userLogin", senderId);
+        socket.current.on("messageDelivered", (data: any) => {
+          setMessages((prev: any) => [...prev, data]);
+          console.log(data);
+        });
+        socket.current.emit("fetchUserMessages", {
+          senderId: senderId,
+          receiverId: receiverId,
+        });
+        socket.current.on("chatFetched", (data: any) => {
+          setMessages(data);
+        });
+      });
+      socket.current.on("disconnect", () => {
+        console.log("Socket disconnected");
+      });
+      socket.current.on("userOffline", (studentId: string) => {
+        if (studentId === receiverId) {
+          console.log(`Student ${studentId} went offline.`);
+          setOffline(true);
+        }
+      });
+      socket.current.on("userOnline", (studentId: string) => {
+        if (studentId === receiverId) {
+          setOffline(false);
+          console.log(`Student ${studentId} came online.`);
+        }
+      });
+      socket.current.emit("set", "is_it_ok", function (response: any) {
+        if (response === "ok") {
+          setIsRead(true);
+        } else {
+          setIsRead(false);
+        }
+      });
+      socket.current.emit("markMessagesAsRead", {
+        senderId: senderId,
+        receiverId: receiverId,
+      });
+      return () => {
+        socket.current.disconnect();
+      };
+    }, []);
+
+    useEffect(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop =
+          chatContainerRef.current.scrollHeight;
+      }
+    }, [messages]);
+
   console.log(messages);
 
   return (
     <div style={{ width: "100%" }}>
       <div className="header">
         <h1>
-          User 2{" "}
           {!offline ? (
-            <div className="isOnline">user is online</div>
+            <div className="isOnline">user2 is online</div>
           ) : (
-            "offline"
+            "User 2 offline"
           )}
         </h1>
         <h4>
@@ -194,9 +204,7 @@ const Chat2 = () => {
         {messages?.map((message: any) => (
           <div
             className={`message ${
-              message.senderId === "87b473da-e45c-475d-bd87-d9bd3e001ac4"
-                ? "sent"
-                : "received"
+              message.senderId === senderId ? "sent" : "received"
             }`}
             key={message.messageId}
           >

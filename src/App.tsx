@@ -37,7 +37,7 @@ export default function App() {
           absAdminId: "6e009c0c-c859-4794-81d0-51be0a7cdfd0",
           adminUserId: "10d0e172-5ec2-4eaa-8b09-7c3387b33134",
           studentId: "736bfb79-0098-4f37-a4a9-fcccab610d52",
-          connectionType: "parent",
+          connectionType: "student",
         },
       });
       socket.current.on("updatedService", (data: any) => {
@@ -56,6 +56,18 @@ export default function App() {
       socket.current.emit("fetchServices", {
         userFetchType: "student",
         userFetchId: "736bfb79-0098-4f37-a4a9-fcccab610d52",
+      });
+
+      socket.current.on("userOffline", (studentId: string) => {
+        if (studentId === "736bfb79-0098-4f37-a4a9-fcccab610d52") {
+          console.log(`Student ${studentId} came online.`);
+        }
+      });
+
+      socket.current.on("userOnline", (studentId: string) => {
+        if (studentId === "736bfb79-0098-4f37-a4a9-fcccab610d52") {
+          console.log(`Student ${studentId} came online.`);
+        }
       });
 
       socket.current.on("serviceHistory", (data: any) => {
@@ -98,7 +110,7 @@ export default function App() {
   }, [parameter1, parameter2, isRendered]);
 
   const fwConfig = {
-    public_key: "FLWPUBK_TEST-36a812686cf2f832980130e983ba1662-X",
+    public_key: "",
     tx_ref: `student-${Math.random() * 10}`,
     amount: 20000,
     currency: "NGN",

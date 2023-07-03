@@ -8,6 +8,12 @@ function formatTimestamp(timestamp: any) {
   return date.toLocaleString("en-US", options);
 }
 
+const absAdminId = "6e009c0c-c859-4794-81d0-51be0a7cdfd0";
+const adminUserId = "10d0e172-5ec2-4eaa-8b09-7c3387b33134";
+
+const senderId = "736bfb79-0098-4f37-a4a9-fcccab610d52";
+const receiverId = "983037b8-ce88-49dd-9a67-95be0043d829";
+
 const Chat2 = () => {
   const [selectedImage, setSelectImage] = useState<any>("");
   const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +23,7 @@ const Chat2 = () => {
   const [messages, setMessages] = useState<any>([]);
   const [input, setInput] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const [offline, setOffline] = useState(false);
+  const [offline, setOffline] = useState(true);
   const [user2, setUser] = useState<any>(null);
   const [isRead, setIsRead] = useState(false);
 
@@ -25,14 +31,14 @@ const Chat2 = () => {
     const fetchUser = async () => {
       try {
         const token =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9sYXR1bmppYXlvbWlrdUBnbWFpbC5jb20iLCJhdXRoSWQiOiI4N2I0NzNkYS1lNDVjLTQ3NWQtYmQ4Ny1kOWJkM2UwMDFhYzQiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODIyMTI4OCwiZXhwIjoxNjkwODEzMjg4fQ.N7Z4sYruvCmLRequhGSxiGmCHJLmykip0_UXbGGAn3k";
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF5b21pa3VAZ21haWwuY29tIiwiYXV0aElkIjoiOTgzMDM3YjgtY2U4OC00OWRkLTlhNjctOTViZTAwNDNkODI5Iiwicm9sZSI6InN0dWRlbnQiLCJpYXQiOjE2ODgzMDMxMTIsImV4cCI6MTY5MDg5NTExMn0.AR3i0Jy4cy9CptmdWiuW9FHC5SzM9a8rnsM2VKRGX28";
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         };
         const response = await axios.get(
-          `http://localhost:8080/api/v1/student/${"87b473da-e45c-475d-bd87-d9bd3e001ac4"}`,
+          `http://localhost:8080/api/v1/student/${receiverId}`,
           config
         );
         setUser(response.data.data);
@@ -47,22 +53,22 @@ const Chat2 = () => {
   useEffect(() => {
     socket.current = io("http://localhost:8080", {
       query: {
-        absAdminId: "937b5d78-8248-44f2-bb82-af4fa18a1efd",
-        adminUserId: "053d5b9b-9ed8-4186-b3ba-c2957959e759",
-        studentId: "c5aedefc-5ddf-4f85-8a20-9581d09a847a",
+        absAdminId,
+        adminUserId,
+        studentId: senderId,
+        connectType: "student",
       },
     });
     socket.current.on("connect", () => {
       console.log("Connected to the server");
-      setOffline(false);
-      socket.current.emit("userLogin", "c5aedefc-5ddf-4f85-8a20-9581d09a847a");
+      socket.current.emit("userLogin", senderId);
       socket.current.on("messageDelivered", (data: any) => {
         setMessages((prev: any) => [...prev, data]);
         console.log(data);
       });
       socket.current.emit("fetchUserMessages", {
-        senderId: "c5aedefc-5ddf-4f85-8a20-9581d09a847a",
-        receiverId: "87b473da-e45c-475d-bd87-d9bd3e001ac4",
+        senderId: senderId,
+        receiverId: receiverId,
       });
       socket.current.on("chatFetched", (data: any) => {
         setMessages(data);
@@ -70,12 +76,17 @@ const Chat2 = () => {
     });
     socket.current.on("disconnect", () => {
       console.log("Socket disconnected");
-      setOffline(true);
     });
     socket.current.on("userOffline", (studentId: string) => {
-      if (studentId === "87b473da-e45c-475d-bd87-d9bd3e001ac4") {
+      if (studentId === receiverId) {
         console.log(`Student ${studentId} went offline.`);
         setOffline(true);
+      }
+    });
+    socket.current.on("userOnline", (studentId: string) => {
+      if (studentId === receiverId) {
+        setOffline(false);
+        console.log(`Student ${studentId} came online.`);
       }
     });
     socket.current.emit("set", "is_it_ok", function (response: any) {
@@ -86,14 +97,8 @@ const Chat2 = () => {
       }
     });
     socket.current.emit("markMessagesAsRead", {
-      senderId: "c5aedefc-5ddf-4f85-8a20-9581d09a847a",
-      receiverId: "87b473da-e45c-475d-bd87-d9bd3e001ac4",
-    });
-    socket.current.on("userOnline", (studentId: string) => {
-      if (studentId === "87b473da-e45c-475d-bd87-d9bd3e001ac4") {
-        setOffline(false);
-        console.log(`Student ${studentId} came online.`);
-      }
+      senderId: senderId,
+      receiverId: receiverId,
     });
     return () => {
       socket.current.disconnect();
@@ -113,8 +118,8 @@ const Chat2 = () => {
       return;
     }
     socket.current.emit("sendMessage", {
-      from: "c5aedefc-5ddf-4f85-8a20-9581d09a847a",
-      to: "87b473da-e45c-475d-bd87-d9bd3e001ac4",
+      from: senderId,
+      to: receiverId,
       message: input,
       type: "text",
     });
@@ -125,13 +130,17 @@ const Chat2 = () => {
       const formData = new FormData();
       formData.append("image", selectedImage);
       const response = await axios.post(
-        "http://localhost:8080/api/v1/upload_chat_image/studentId",
+        "http://localhost:8080/api/v1/upload_chat_image/" + senderId,
         formData,
         {
           params: {
-            from: "c5aedefc-5ddf-4f85-8a20-9581d09a847a",
-            to: "87b473da-e45c-475d-bd87-d9bd3e001ac4",
+            from: senderId,
+            to: receiverId,
             type: "media",
+          },
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9sYXR1bmppYXlvbWlrdUBnbWFpbC5jb20iLCJhdXRoSWQiOiI3MzZiZmI3OS0wMDk4LTRmMzctYTRhOS1mY2NjYWI2MTBkNTIiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODMwNDM3NSwiZXhwIjoxNjkwODk2Mzc1fQ.-vyLXdV6hsXZHZwMrKZ03BPWeW858xpA0ImDSgLGsRU",
           },
         }
       );
@@ -175,17 +184,16 @@ const Chat2 = () => {
     setSelectImage("");
   };
 
-  console.log(messages);
+  console.log(offline);
 
   return (
     <div style={{ width: "100%" }}>
       <div className="header">
         <h1>
-          User 1{" "}
           {!offline ? (
-            <div className="isOnline">user is online</div>
+            <div className="isOnline">user1 is online</div>
           ) : (
-            "offline"
+            "User 1 Offline"
           )}
         </h1>
         <h4>
@@ -196,9 +204,7 @@ const Chat2 = () => {
         {messages?.map((message: any) => (
           <div
             className={`message ${
-              message.senderId === "c5aedefc-5ddf-4f85-8a20-9581d09a847a"
-                ? "sent"
-                : "received"
+              message.senderId === senderId ? "sent" : "received"
             }`}
             key={message.messageId}
           >
@@ -213,10 +219,8 @@ const Chat2 = () => {
               <span className="timestamp">
                 {formatTimestamp(message.timestamp)}
               </span>
-              {message.senderId === "c5aedefc-5ddf-4f85-8a20-9581d09a847a" ? (
-                <div style={{ color: "red" }}>
-                  {isRead ? "seen" : ""}
-                </div>
+              {message.senderId === senderId ? (
+                <div style={{ color: "red" }}>{isRead ? "seen" : ""}</div>
               ) : null}
             </div>
           </div>
