@@ -37,7 +37,7 @@ export default function App() {
           absAdminId: "6e009c0c-c859-4794-81d0-51be0a7cdfd0",
           adminUserId: "10d0e172-5ec2-4eaa-8b09-7c3387b33134",
           studentId: "736bfb79-0098-4f37-a4a9-fcccab610d52",
-          connectionType: "student",
+          connectType: "student",
         },
       });
       socket.current.on("updatedService", (data: any) => {
