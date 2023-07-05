@@ -93,3 +93,42 @@ img{
 .isOnline {
   color: green;
 }
+
+.chat-ai-form{
+    bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: white;
+  position: fixed;
+  padding: 10px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.chat-ai-form input {
+  width: 100%;
+  height: 30px;
+    border: 1px solid grey;
+    outline: none;
+}
+
+.chat-ai-form button {
+  padding: 10px;
+  background-color: green;
+  color: #fff;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+pre {
+  max-width: 100%;
+  
+}
+
+code {
+  max-width: 100%;
+  width: 100%;
+  white-space: pre-wrap;
+}
