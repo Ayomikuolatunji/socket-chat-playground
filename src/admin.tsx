@@ -1,6 +1,16 @@
 import axios from "axios";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
+import { studentId } from "./App";
+
+export const adminUserId = "d0c4032c-e384-4eba-b921-85c0de9fe3f4";
+
+export const absAdminId = "5c61b240-9a7d-4992-896e-9efbd78676d8";
+
+export const servicePortalId = "969be6ce-0dd5-4673-8d68-24d805fee75c";
+
+const userAdminToken =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9sYXR1bmppYXlvbWlrdUBnbWFpbC5jb20iLCJhdXRoSWQiOiJkMGM0MDMyYy1lMzg0LTRlYmEtYjkyMS04NWMwZGU5ZmUzZjQiLCJyb2xlIjoiQWJzVXNlckFkbWluIiwiaWF0IjoxNjk1MTIwMjIyLCJleHAiOjE2OTc3MTIyMjJ9.kNSuCPhyx_2Gm-V91ErHd7vKbx4MrCmOPYY56GqdBgQ";
 
 export default function Admin() {
   const socket = useRef<any>(null);
@@ -14,10 +24,10 @@ export default function Admin() {
 
   const updateCompletedService = () => {
     socket.current.emit("updateService", {
-      studentId: "736bfb79-0098-4f37-a4a9-fcccab610d52",
-      servicePortalId: "89d7e09f-8438-46b6-a314-a1ac2f6cec62",
+      studentId: studentId,
+      servicePortalId: servicePortalId,
       serviceStatus: "DONE",
-      adminUserId: "10d0e172-5ec2-4eaa-8b09-7c3387b33134",
+      adminUserId: adminUserId,
     });
   };
   const completeService = async () => {
@@ -28,25 +38,39 @@ export default function Admin() {
       const formData = new FormData();
       formData.append("file", selectedFile);
       const response = await axios(
-        `http://localhost:8080/api/v1/upload_service_doc/10d0e172-5ec2-4eaa-8b09-7c3387b33134`,
+        `https://stanging-server.onrender.com/api/v1/absUserAdmin/upload_service_doc/${adminUserId}`,
         {
           method: "POST",
           params: {
-            studentId: "736bfb79-0098-4f37-a4a9-fcccab610d52",
-            servicePortalId: "89d7e09f-8438-46b6-a314-a1ac2f6cec62",
-            absAdminId: "6e009c0c-c859-4794-81d0-51be0a7cdfd0",
+            studentId: studentId,
+            serviceId: servicePortalId,
+            absAdminId: absAdminId,
           },
           headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9sYXR1bmppYXlvbWlrdUBnbWFpbC5jb20iLCJhdXRoSWQiOiIxMGQwZTE3Mi01ZWMyLTRlYWEtOGIwOS03YzMzODdiMzMxMzQiLCJyb2xlIjoiQWJzVXNlckFkbWluIiwiaWF0IjoxNjg4MzAwOTI0LCJleHAiOjE2OTA4OTI5MjR9.yBO41azG5umOytOiy_apujOFTBvpSJ7N2AcjSeNtVHI",
+            Authorization: `Bearer ${userAdminToken}`,
           },
           data: formData,
         }
       );
-      console.log(response);
       if (response.status === 200) {
         console.log("Document uploaded successfully");
-        updateCompletedService();
+        await axios(`https://stanging-server.onrender.com/api/v1/absUserAdmin/request-service/${adminUserId}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${userAdminToken}`,
+          },
+          data: {
+            studentId,
+            // enum ServiceStatus {
+            //   TODO
+            //   In_PROGRESS
+            //   REJECTED
+            //   DONE
+            // }
+            serviceStatus: "DONE",
+            servicePortalId,
+          },
+        });
       } else {
         console.error("Error uploading document");
       }
@@ -55,29 +79,18 @@ export default function Admin() {
     }
   };
   useEffect(() => {
-    socket.current = io("http://localhost:8080", {
+    socket.current = io("https://stanging-server.onrender.com", {
       query: {
-        absAdminId: "6e009c0c-c859-4794-81d0-51be0a7cdfd0",
-        adminUserId: "10d0e172-5ec2-4eaa-8b09-7c3387b33134",
+        absAdminId: absAdminId,
+        adminUserId: adminUserId,
         connectionType: "school",
       },
     });
     socket.current.on("connect", () => {
       console.log("Connected to the server");
-      socket.current.emit("userLogin", "10d0e172-5ec2-4eaa-8b09-7c3387b33134");
+      socket.current.emit("userLogin", adminUserId);
     });
-    socket.current.emit("fetchServices", {
-      userFetchType: "school",
-      userFetchId: "10d0e172-5ec2-4eaa-8b09-7c3387b33134",
-    });
-
-    socket.current.on("serviceHistory", (data: any) => {
-      console.log(data);
-    });
-    socket.current.on("newService", (data: unknown) => {
-      console.log(data);
-    });
-    socket.current.on("updatedService", (data: any) => {
+    socket.current.on("newStudentRequestService", (data: unknown) => {
       console.log(data);
     });
     return () => {
@@ -85,21 +98,40 @@ export default function Admin() {
     };
   }, []);
 
-  const updateServiceStatus = () => {
-    socket.current.emit("updateService", {
-      studentId: "736bfb79-0098-4f37-a4a9-fcccab610d52",
-      servicePortalId: "89d7e09f-8438-46b6-a314-a1ac2f6cec62",
-      serviceStatus: "In_PROGRESS",
-      adminUserId: "10d0e172-5ec2-4eaa-8b09-7c3387b33134",
+  useEffect(() => {
+    (async () => {
+      const res = await axios(
+        `https://stanging-server.onrender.com/api/v1/absUserAdmin/request-service/${adminUserId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${userAdminToken}`,
+          },
+        }
+      );
+      console.log(res);
+    })();
+  }, []);
+
+  const updateServiceStatus = async () => {
+    await axios(`https://stanging-server.onrender.com/api/v1/absUserAdmin/request-service/${adminUserId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${userAdminToken}`,
+      },
+      data: {
+        studentId,
+        // enum ServiceStatus {
+        //   TODO
+        //   In_PROGRESS
+        //   REJECTED
+        //   DONE
+        // }
+        serviceStatus: "In_PROGRESS",
+        servicePortalId,
+      },
     });
   };
-
-  // enum ServiceStatus {
-  // TODO
-  // In_PROGRESS
-  // REJECTED
-  // DONE
-// }
   return (
     <div className="App">
       <h1>Admin</h1>
