@@ -32,7 +32,7 @@ export default function App() {
 
   const payment = async (amount: number, payment_type: string) => {
     await axios(
-      `https://stanging-server.onrender.com/api/v1/request-service/${studentId}/?absAdminId=${absAdminId}&adminUserId=${adminUserId}`,
+      `https://abs-stanging-server.onrender.com/api/v1/request-service/${studentId}/?absAdminId=${absAdminId}&adminUserId=${adminUserId}`,
       {
         method: "POST",
         headers: {
@@ -43,7 +43,6 @@ export default function App() {
             studentId: studentId,
             servicePortal: {
               serviceName: "School fees",
-              serviceStatus: "TODO",
               comment: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
               serviceType: "Payment",
             },
@@ -64,57 +63,9 @@ export default function App() {
     );
   };
 
-  const printing = async (amount: number) => {
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("upload_preset", "gn2sjg6g");
-
-    const response = await axios.post(
-      "https://api.cloudinary.com/v1_1/dm15rdmsj/image/upload",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    console.log("File uploaded:", response.data);
-    if (response.data) {
-      await axios(
-        `https://stanging-server.onrender.com/api/v1/request-service/${studentId}/?absAdminId=${absAdminId}&adminUserId=${adminUserId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${studentToken}`,
-          },
-          data: {
-            parameter1,
-            ...{
-              studentId: studentId,
-              servicePortal: {
-                serviceName: "School fees",
-                serviceStatus: "TODO",
-                comment: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-                serviceType: "Printing",
-              },
-            },
-            transactionDetails: {
-              paymentId: parameter2,
-              serviceTransactionAmount: Number(amount),
-              transactionStatus: "DONE",
-              serviceTransactionsMethod: "DEBIT_CARD",
-              currency: "NAIRA",
-            },
-          },
-        }
-      );
-    }
-  };
-
   useEffect(() => {
     if (isRendered) {
-      socket.current = io("https://stanging-server.onrender.com");
+      socket.current = io("https://abs-stanging-server.onrender.com");
       socket.current.on("updatedService", (data: any) => {
         console.log(data);
       });
@@ -122,17 +73,17 @@ export default function App() {
         console.log("Connected to the server");
         socket.current.emit("userLogin", studentId);
       });
-      socket.current.on("notification", (data: unknown) => {
-        console.log(data);
-      });
       socket.current.on("userOnline", (id: string) => {
         if (id === studentId) {
           console.log(`Student ${id} came online.`);
         }
       });
+      socket.current.on("notification", (data: unknown) => {
+        console.log(data);
+      });
       if (parameter1 === "successful") {
         fetch(
-          `https://stanging-server.onrender.com/api/v1/verify-service-transaction/${studentId}?serviceTransactionId=${parameter2}`,
+          `https://abs-stanging-server.onrender.com/api/v1/verify-service-transaction/${studentId}?serviceTransactionId=${parameter2}`,
           {
             method: "GET",
             headers: {
@@ -154,21 +105,20 @@ export default function App() {
     }
   }, [parameter1, parameter2, isRendered]);
 
-
-   useEffect(() => {
-     (async () => {
-       const res = await axios(
-         `https://stanging-server.onrender.com/api/v1/request-service/${studentId}`,
-         {
-           method: "GET",
-           headers: {
-             Authorization: `Bearer ${studentToken}`,
-           },
-         }
-       );
-       console.log(res);
-     })();
-   }, []);
+  useEffect(() => {
+    (async () => {
+      const res = await axios(
+        `https://abs-stanging-server.onrender.com/api/v1/student-services/${studentId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${studentToken}`,
+          },
+        }
+      );
+      console.log(res);
+    })();
+  }, []);
 
   const fwConfig = {
     public_key: "FLWPUBK_TEST-32f1f9f960f0fc1a267cbd381986bc10-X",
@@ -181,7 +131,7 @@ export default function App() {
     customer: {
       email: "ayomikuolatunji@gmail.com",
       phone_number: "09088098622",
-      name: "Olatunji Olubisi",
+      name: "Olatunji Olubisi (institution)",
     },
     callback: function (data: unknown) {
       console.log(data);

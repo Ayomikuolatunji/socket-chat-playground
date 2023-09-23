@@ -7,7 +7,7 @@ export const adminUserId = "d0c4032c-e384-4eba-b921-85c0de9fe3f4";
 
 export const absAdminId = "5c61b240-9a7d-4992-896e-9efbd78676d8";
 
-export const servicePortalId = "969be6ce-0dd5-4673-8d68-24d805fee75c";
+export const servicePortalId = "81dc862e-cfd0-4698-8c9f-8cc34f407222";
 
 const userAdminToken =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9sYXR1bmppYXlvbWlrdUBnbWFpbC5jb20iLCJhdXRoSWQiOiJkMGM0MDMyYy1lMzg0LTRlYmEtYjkyMS04NWMwZGU5ZmUzZjQiLCJyb2xlIjoiQWJzVXNlckFkbWluIiwiaWF0IjoxNjk1MTIwMjIyLCJleHAiOjE2OTc3MTIyMjJ9.kNSuCPhyx_2Gm-V91ErHd7vKbx4MrCmOPYY56GqdBgQ";
@@ -38,7 +38,7 @@ export default function Admin() {
       const formData = new FormData();
       formData.append("file", selectedFile);
       const response = await axios(
-        `https://stanging-server.onrender.com/api/v1/absUserAdmin/upload_service_doc/${adminUserId}`,
+        `https://abs-stanging-server.onrender.com/api/v1/absUserAdmin/upload_service_doc/${adminUserId}`,
         {
           method: "POST",
           params: {
@@ -54,7 +54,7 @@ export default function Admin() {
       );
       if (response.status === 200) {
         console.log("Document uploaded successfully");
-        await axios(`https://stanging-server.onrender.com/api/v1/absUserAdmin/request-service/${adminUserId}`, {
+        await axios(`https://abs-stanging-server.onrender.com/api/v1/absUserAdmin/request-service/${adminUserId}`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${userAdminToken}`,
@@ -79,7 +79,7 @@ export default function Admin() {
     }
   };
   useEffect(() => {
-    socket.current = io("https://stanging-server.onrender.com", {
+    socket.current = io("https://abs-stanging-server.onrender.com", {
       query: {
         absAdminId: absAdminId,
         adminUserId: adminUserId,
@@ -101,7 +101,7 @@ export default function Admin() {
   useEffect(() => {
     (async () => {
       const res = await axios(
-        `https://stanging-server.onrender.com/api/v1/absUserAdmin/request-service/${adminUserId}`,
+        `https://abs-stanging-server.onrender.com/api/v1/absUserAdmin/services/${adminUserId}`,
         {
           method: "GET",
           headers: {
@@ -114,7 +114,7 @@ export default function Admin() {
   }, []);
 
   const updateServiceStatus = async () => {
-    await axios(`https://stanging-server.onrender.com/api/v1/absUserAdmin/request-service/${adminUserId}`, {
+    await axios(`https://abs-stanging-server.onrender.com/api/v1/absUserAdmin/request-service/${adminUserId}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${userAdminToken}`,
@@ -143,6 +143,7 @@ export default function Admin() {
       </div>
       <div>
         <button onClick={updateServiceStatus}>update service status</button>
+        <button onClick={updateServiceStatus}>Reject</button>
       </div>
     </div>
   );
