@@ -3,9 +3,9 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { studentId } from "./App";
 
-export const adminUserId = "d0c4032c-e384-4eba-b921-85c0de9fe3f4";
+export const adminUserId = "5497ce28-4f2a-4898-a767-08f8f9e7cfaf";
 
-export const absAdminId = "5c61b240-9a7d-4992-896e-9efbd78676d8";
+export const absAdminId = "fca86d2b-6568-452f-be4a-14247bfb0d78";
 
 export const servicePortalId = "81dc862e-cfd0-4698-8c9f-8cc34f407222";
 
